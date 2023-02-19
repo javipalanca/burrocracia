@@ -2,7 +2,8 @@ import calendar
 import random
 
 import pandas as pd
-from tabulate import tabulate
+
+MAX_HOUR_DAY = 7.5
 
 
 def get_working_days(month, year):
@@ -13,8 +14,6 @@ def get_working_days(month, year):
             working_days.append(day.strftime("%-d/%-m/%y"))
     return working_days
 
-
-MAX_HOUR_DAY = 7.5
 
 if __name__ == '__main__':
     # load csv to dataframe with iso-8859-1 encoding
@@ -51,13 +50,11 @@ if __name__ == '__main__':
 
         used_hours += df[day].sum()
 
-    max_hours_month = MAX_HOUR_DAY * num_working_days -used_hours
+    max_hours_month = MAX_HOUR_DAY * num_working_days - used_hours
 
     if sum([x for x in hours_by_project.values() if x != -1]) > max_hours_month:
         print(f"Te has pasado de horas. El máximo es de 7.5h al día y {max_hours_month} horas este mes")
         exit(1)
-
-
 
     # iter dataframe by rows
     for index, row in df.iterrows():
