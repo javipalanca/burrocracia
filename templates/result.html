@@ -26,40 +26,22 @@
         </ul>
     </header>
 </div>
+
 <div class="container">
     <main>
         <div class="py-5 text-center">
             <i class="fa fa-democrat fa-8x"></i>
-            <h2>Establecer horas</h2>
-            <p class="lead">Establece las horas mínimas por proyecto de investigación y para docencia para el periodo
-                seleccionado.</p>
+            <h2>Resultado</h2>
+            <p class="lead">Comprueba el resultado calculado y si está correcto puedes descargarlo. Sino vuelve atrás y
+                modifica la asignación de horas.</p>
         </div>
+
+        {{ df | safe }}
 
         <div class="row g-5">
             <div class="col-md-7 col-lg-8">
-                <h4 class="mb-3">Establece las horas a dedicar por proyecto en el periodo {{ period }}.</h4>
-                <form action="/solve" method="post">
-                    <div class="row g-3">
-                        {% for key, value in questions.items() %}
-                        {% if key.0 == '__empty__' %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ value }}
-                        </div>
-                        {% else %}
-                        <label for="{{ key }}" class="form-label">{{ value }}</label>
-                        <div class="input-group has-validation">
-                            <input type="number" min="-1" step="0.5" value="-1" class="form-control" id="{{ key }}"
-                                   name="{{ key }}">
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-
-                    <hr class="my-4">
-
-                    <input type="hidden" name="filename" value="{{ filename }}">
-                    <button class="w-100 btn btn-primary btn-lg" type="submit">Generar CSV</button>
-                </form>
+                <a href="/download/{{ random_id }}" class="btn btn-primary btn-lg" role="button" aria-disabled="true">Descargar
+                    CSV</a>
             </div>
         </div>
     </main>
@@ -76,6 +58,5 @@
         </footer>
     </div>
 </div>
-
 </body>
 </html>
