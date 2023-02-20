@@ -105,7 +105,7 @@ def check_hours(_df, _working_days, _num_working_days, _teaching_hours, _hours_b
 	max_hours_month = MAX_HOUR_DAY * _num_working_days - used_hours
 	if sum([x for x in _hours_by_project.values() if x != -1]) > max_hours_month:
 		total_teaching_hours = _df.loc[_df['Id Actividad'] == 97, _df.columns[7:]].sum(axis=1)
-		msg = f"Te has pasado de horas. El máximo es de 7.5h al día y {max_hours_month} horas este mes (sin contar la docencia)\n"
+		msg = f"Te has pasado de horas.\nEl máximo es de 7.5h al día y {max_hours_month} horas este mes (sin contar la docencia).\n"
 		msg += f"Has asignado {total_teaching_hours.sum()} horas de docencia"
 		raise Exception(msg)
 

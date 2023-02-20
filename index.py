@@ -73,7 +73,11 @@ def solve():
 		df, working_days, num_working_days = read_df(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 		# Check hours
-		checked_df = check_hours(df, working_days, num_working_days, teaching_hours, hours_by_project)
+		try:
+			checked_df = check_hours(df, working_days, num_working_days, teaching_hours, hours_by_project)
+		except Exception as e:
+			msgs = str(e).split("\n")
+			return render_template('error.html', error=msgs)
 
 		solved_df = solve_hours(checked_df, hours_by_project, working_days)
 
