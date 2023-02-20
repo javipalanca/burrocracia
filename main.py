@@ -106,9 +106,10 @@ def check_hours(_df, _working_days, _num_working_days, _teaching_hours, _hours_b
         _df[day] = _df[day].apply(lambda x: float(str(x).replace(',', '.')))
         _df[day] = _df[day].astype(float).fillna(0)
         if _teaching_hours != -1:
+            pending_hours_in_day = MAX_HOUR_DAY - _df[day].sum()
             # put in row "Docencia" and column day the max value between the current value and teaching_hours
             _df.loc[_df['Id Actividad'] == 97, day] = _df.loc[_df['Id Actividad'] == 97, day].apply(
-                lambda x: max(x, _teaching_hours))
+                lambda x: min(max(x, _teaching_hours), pending_hours_in_day))
 
         used_hours += _df[day].sum()
     max_hours_month = MAX_HOUR_DAY * _num_working_days - used_hours
