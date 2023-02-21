@@ -1,80 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Burrocracia</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
-            crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
-          integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+	<meta charset="UTF-8">
+	<title>Burrocracia</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+		  integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+			integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+			crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+		  integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
+		  crossorigin="anonymous" referrerpolicy="no-referrer"/>
 </head>
 <body>
 <div class="container">
-    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <i class="fa fa-democrat fa-4x"></i>
-            <h1>Burrocracia</h1>&nbsp;<span class="fs-4">(el solver para DEDICA)</span>
-        </a>
+	<header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+		<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+			<i class="fa fa-democrat fa-4x"></i>
+			<h1>Burrocracia</h1>&nbsp;<span class="fs-4">(el solver para DEDICA)</span>
+		</a>
 
-        <ul class="nav nav-pills">
-            <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">About</a></li>
-        </ul>
-    </header>
+		<ul class="nav nav-pills">
+			<li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Home</a></li>
+			<li class="nav-item"><a href="#" class="nav-link">About</a></li>
+		</ul>
+	</header>
 </div>
 <div class="container">
-    <main>
-        <div class="py-5 text-center">
-            <i class="fa fa-democrat fa-8x"></i>
-            <h2>Establecer horas</h2>
-            <p class="lead">Establece las horas mínimas por proyecto de investigación y para docencia para el periodo
-                seleccionado.</p>
-        </div>
+	<main>
+		<div class="py-5 text-center">
+			<i class="fa fa-democrat fa-8x"></i>
+			<h2>Establecer horas</h2>
+			<p class="lead">Establece las horas mínimas por proyecto de investigación y para docencia para el periodo
+				seleccionado.</p>
+		</div>
 
-        <div class="row g-5">
-            <div class="col-md-7 col-lg-8">
-                <h4 class="mb-3">Establece las horas a dedicar por proyecto en el periodo {{ period }}.</h4>
-                <form action="/solve" method="post">
-                    <div class="row g-3">
-                        {% for key, value in questions.items() %}
-                        {% if key.0 == '__empty__' %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ value }}
-                        </div>
-                        {% else %}
-                        <label for="{{ key }}" class="form-label">{{ value }}</label>
-                        <div class="input-group has-validation">
-                            <input type="number" min="-1" step="0.5" value="-1" class="form-control" id="{{ key }}"
-                                   name="{{ key }}">
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
+		<div class="row g-5">
+			<div class="col-md-7 col-lg-8">
+				<h4 class="mb-3">Establece las horas a dedicar por proyecto en el periodo {{ period }}.</h4>
+				<form action="/solve" method="post">
+					<div class="row g-3">
+						<ul class="list-group mb-3">
 
-                    <hr class="my-4">
+							{% for key, value in questions.items() %}
+							<li class="list-group-item d-flex justify-content-between lh-sm">
+								{% if key.0 == '__empty__' %}
+								<div class="alert alert-danger" role="alert">
+									{{ value }}
+								</div>
+								{% else %}
+								<div class="col-md-10">
+									<label for="{{ key }}" class="col-form-label">{{ value }}</label>
+								</div>
+								<div class="col-md-2">
+									<input type="number" min="-1" step="0.5" value="0" class="form-control"
+										   id="{{ key }}"
+										   name="{{ key }}">
+								</div>
+								{% endif %}
+								{% endfor %}
+							</li>
+						</ul>
+					</div>
 
-                    <input type="hidden" name="filename" value="{{ filename }}">
-                    <button class="w-100 btn btn-primary btn-lg" type="submit">Generar CSV</button>
-                </form>
-            </div>
-        </div>
-    </main>
-    <div class="container">
-        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-            <p class="col-md-4 mb-0 text-muted">© 2023 GTI-IA / VRAIN</p>
+					<hr class="my-4">
 
-            <a href="/"
-               class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-                <svg class="bi me-2" width="40" height="32">
-                    <use xlink:href="#bootstrap"></use>
-                </svg>
-            </a>
-        </footer>
-    </div>
+					<input type="hidden" name="filename" value="{{ filename }}">
+					<button class="w-100 btn btn-primary btn-lg" type="submit">Generar CSV</button>
+				</form>
+			</div>
+		</div>
+	</main>
+	<div class="container">
+		<footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+			<p class="col-md-4 mb-0 text-muted">© 2023 GTI-IA / VRAIN</p>
+
+			<a href="/"
+			   class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+				<svg class="bi me-2" width="40" height="32">
+					<use xlink:href="#bootstrap"></use>
+				</svg>
+			</a>
+		</footer>
+	</div>
 </div>
 
 </body>
