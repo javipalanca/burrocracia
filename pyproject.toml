@@ -1,0 +1,23 @@
+[project]
+name = "burrocracia"
+version = "0.1.0"
+description = "Asignación de horas a proyectos"
+authors = [ { name = "javipalanca" } ]
+readme = "README.md"
+requires-python = ">=3.8"
+
+dependencies = [
+    "numpy==1.24.4",
+    "pandas==2.0.3",
+    "flask==3.0.0",
+    "pretty-html-table==0.9.16",
+    "python-dateutil==2.8.2"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+exclude = ["uploads", "results", "templates"]
+

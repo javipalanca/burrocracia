@@ -69,6 +69,30 @@
 					<button class="w-100 btn btn-primary btn-lg" type="submit">Generar CSV</button>
 				</form>
 			</div>
+
+			<div class="col-md-5 col-lg-4">
+				<div class="card mb-3">
+					<div class="card-body">
+						<h5 class="card-title">Resumen</h5>
+						<p class="card-text">Periodo: <strong>{{ period }}</strong></p>
+						<p class="card-text">Días laborables: <strong id="num-days">{{ num_working_days }}</strong></p>
+						<p class="card-text">Horas máximas mes: <strong id="max-hours">{{ max_hours_month }}</strong></p>
+						<p class="card-text">Horas asignadas: <strong id="assigned-hours">0</strong></p>
+						<p class="card-text">Horas restantes: <strong id="remaining-hours">{{ max_hours_month }}</strong></p>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Previsualización</h5>
+						<div id="preview-table-container">
+							<table class="table table-sm" id="preview-table">
+								<thead><tr><th>Proyecto</th><th>WP</th><th>Horas</th></tr></thead>
+								<tbody></tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</main>
 	<div class="container">
@@ -86,4 +110,163 @@
 </div>
 
 </body>
+<script>
+// Dynamic update of assigned and remaining hours and preview table
+document.addEventListener('DOMContentLoaded', function () {
+	const inputs = Array.from(document.querySelectorAll('input[type=number]'));
+	const maxHours = parseFloat(document.getElementById('max-hours').innerText);
+	const assignedEl = document.getElementById('assigned-hours');
+	const remainingEl = document.getElementById('remaining-hours');
+	const previewBody = document.querySelector('#preview-table tbody');
+	const numDays = parseInt(document.getElementById('num-days').innerText);
+	// existing totals injected from server
+	const existingTotal = parseFloat('{{ existing_total }}');
+	const existingByActivity = {{ existing_by_activity|tojson }};
+
+	function update() {
+		// start from existing hours present in CSV
+		let total = existingTotal || 0;
+		previewBody.innerHTML = '';
+
+		const rows = [];
+		const freeProjectRows = [];
+
+		// First pass: compute contributions from special activities and fixed project totals
+		inputs.forEach(input => {
+			if (input.name === 'filename' || input.name === 'submit') return;
+			let val = input.value === '' ? null : parseFloat(input.value);
+
+			// parse display name and wp
+			let name = input.name;
+			let proj = name;
+			let wp = '';
+			if (name.startsWith('(') && name.includes(',')) {
+				let s = name.replace(/[()"']/g, '');
+				let parts = s.split(',');
+				proj = parts[0];
+				wp = parts[1] ? parts[1].trim() : '';
+			}
+
+			const specialKeys = ['__teaching__','__other_id__','__other__','__lessons__'];
+			const keyFound = specialKeys.find(k => input.name.includes(k));
+
+			if (keyFound) {
+				const existingActTotal = parseFloat(existingByActivity[keyFound] || 0);
+				if (val !== null && !isNaN(val) && val >= 0) {
+					const targetTotal = Math.max(existingActTotal, val * numDays);
+					total += (targetTotal - existingActTotal);
+					rows.push({proj, wp, display: targetTotal.toFixed(1)});
+				} else {
+					// show existing total for -1 or empty
+					rows.push({proj, wp, display: (existingActTotal).toFixed(1)});
+				}
+			} else {
+				// regular project
+				if (val === -1) {
+					// mark as free project to be estimated later
+					freeProjectRows.push({proj, wp, input});
+					rows.push({proj, wp, display: ''});
+				} else if (val !== null && !isNaN(val) && val >= 0) {
+					total += val;
+					rows.push({proj, wp, display: val.toFixed(1)});
+				} else {
+					rows.push({proj, wp, display: ''});
+				}
+			}
+		});
+
+		// Estimate allocation for free projects (-1): distribute remaining capacity equally
+		let remainingCapacity = maxHours - total;
+		if (freeProjectRows.length > 0 && remainingCapacity > 0) {
+			const per = remainingCapacity / freeProjectRows.length;
+			// update corresponding rows (they are in same order as rows array)
+			let freeIndex = 0;
+			for (let i = 0; i < rows.length; i++) {
+				if (rows[i].display === '') {
+					// could be either empty input or a free project; check matching by proj/wp
+					// if freeProjectRows has this proj/wp, assign
+					const fp = freeProjectRows[freeIndex];
+					if (fp && rows[i].proj === fp.proj && rows[i].wp === fp.wp) {
+						rows[i].display = per.toFixed(1);
+						total += per;
+						freeIndex++;
+						if (freeIndex >= freeProjectRows.length) break;
+					}
+				}
+			}
+		}
+
+		// Render rows
+		rows.forEach(r => {
+			if (r.proj !== 'filename') {
+				const tr = document.createElement('tr');
+				const tdProj = document.createElement('td'); tdProj.textContent = r.proj;
+				const tdWp = document.createElement('td'); tdWp.textContent = r.wp;
+				const tdVal = document.createElement('td'); tdVal.textContent = r.display;
+				tr.appendChild(tdProj); tr.appendChild(tdWp); tr.appendChild(tdVal);
+				previewBody.appendChild(tr);
+			}
+		});
+
+		assignedEl.textContent = total.toFixed(1);
+		const remaining = (maxHours - total);
+		remainingEl.textContent = remaining.toFixed(1);
+		if (remaining < 0) {
+			remainingEl.classList.add('text-danger');
+		} else {
+			remainingEl.classList.remove('text-danger');
+		}
+	}
+
+	// Replace local calculation with server-side preview for exact match
+	const debounce = (fn, wait) => {
+		let t = null;
+		return (...args) => {
+			if (t) clearTimeout(t);
+			t = setTimeout(() => fn(...args), wait);
+		};
+	};
+
+	async function fetchPreview() {
+		const form = new FormData();
+		// include filename
+		const filenameInput = document.querySelector('input[name="filename"]');
+		if (filenameInput) form.append('filename', filenameInput.value);
+		inputs.forEach(input => {
+			if (input.name === 'submit') return;
+			form.append(input.name, input.value);
+		});
+		try {
+			const resp = await fetch('/preview', {method: 'POST', body: form});
+			if (!resp.ok) {
+				const j = await resp.json();
+				console.error('Preview error', j);
+				return;
+			}
+			const data = await resp.json();
+			// render preview table
+			previewBody.innerHTML = '';
+			data.rows.forEach(r => {
+				const tr = document.createElement('tr');
+				const tdProj = document.createElement('td'); tdProj.textContent = r.project;
+				const tdWp = document.createElement('td'); tdWp.textContent = r.wp;
+				const tdVal = document.createElement('td'); tdVal.textContent = parseFloat(r.hours).toFixed(1);
+				tr.appendChild(tdProj); tr.appendChild(tdWp); tr.appendChild(tdVal);
+				previewBody.appendChild(tr);
+			});
+			assignedEl.textContent = parseFloat(data.assigned_total).toFixed(1);
+			const remaining = parseFloat(data.remaining);
+			remainingEl.textContent = remaining.toFixed(1);
+			if (remaining < 0) remainingEl.classList.add('text-danger'); else remainingEl.classList.remove('text-danger');
+		} catch (e) {
+			console.error('Preview fetch failed', e);
+		}
+	}
+
+	const debouncedPreview = debounce(fetchPreview, 300);
+	inputs.forEach(i => i.addEventListener('input', debouncedPreview));
+	// initial preview
+	fetchPreview();
+});
+</script>
 </html>
