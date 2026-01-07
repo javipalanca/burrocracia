@@ -265,7 +265,7 @@ if __name__ == '__main__':
 	# Use localhost by default and a safe port; allow override via PORT/HOST env vars
 	host = os.environ.get('HOST', '127.0.0.1')
 	try:
-		port = int(os.environ.get('PORT', '8000'))
+		port = int(os.environ.get('PORT', '5000'))
 	except ValueError:
-		port = 8000
+		port = 5000
 	app.run(host=host, port=port, debug=True)
